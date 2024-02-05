@@ -1,7 +1,10 @@
 breed [ hawks hawk ]
 breed [ rabbits rabbit ]
 
-turtles-own [ energy ]
+turtles-own [
+  energy
+  cooldown
+]
 patches-own [ countdown ]
 
 to setup
@@ -19,8 +22,9 @@ to setup
     set shape "rabbit"
     set color white
     set size 1.5
-    set label-color blue
-    set energy rabbit-food-energy-gain
+    set label-color pink
+    set energy initial-rabbit-energy
+    set cooldown rabbit-cooldown
     setxy random-xcor random-ycor
   ]
 
@@ -29,7 +33,8 @@ to setup
     set shape "hawk"
     set color red - 1
     set size 2
-    set energy hawk-food-energy-gain
+    set energy initial-hawk-energy
+    set cooldown hawk-cooldown
     setxy random-xcor random-ycor
   ]
 
@@ -40,10 +45,10 @@ to go
   if not any? turtles or not any? rabbits or not any? hawks  [ stop ]
 
   ask rabbits [
-    turtle-move
+    rabbit-move
 
     ; deteriorate one energy every tick
-    set energy energy - 1
+    set energy (energy - rabbit-energy-drain)
 
     ; feed on grass
     if pcolor = green [
@@ -51,19 +56,14 @@ to go
       set energy energy + rabbit-food-energy-gain
     ]
 
-    ; probability to reproduce
-    if random-float 100 < rabbit-reproduce [
-      hatch 1 [ rt random-float 360 fd 1 ]
-    ]
-
     if energy < 0 [ die ]
   ]
 
   ask hawks [
-    turtle-move
+    hawk-move
 
     ; deteriorate one energy every tick
-    set energy energy - 1
+    set energy (energy - hawk-energy-drain)
 
     ; kill one nearby rabbit
     let prey one-of rabbits-here
@@ -72,13 +72,33 @@ to go
       set energy energy + hawk-food-energy-gain
     ]
 
-    ; probability to reproduce
-    if random-float 100 < hawk-reproduce [
-      hatch 1 [ rt random-float 360 fd 1 ]
-    ]
-
     if energy < 0 [ die ]
   ]
+
+  ask rabbits[
+  ; probability to reproduce
+    if (any? other rabbits-here and cooldown = 0) [
+      hatch-rabbits 2 [
+        set energy initial-rabbit-energy
+        set cooldown rabbit-cooldown
+        setxy random-xcor random-ycor
+      ]
+      set cooldown rabbit-cooldown
+    ]
+  ]
+
+  ask hawks[
+  ; probability to reproduce
+    if (any? other hawks-here and cooldown = 0) [
+      hatch-hawks 2 [
+        set energy initial-hawk-energy
+        set cooldown hawk-cooldown
+        setxy random-xcor random-ycor
+      ]
+      set cooldown hawk-cooldown
+    ]
+  ]
+
 
   ask patches [
     if pcolor = brown [
@@ -94,25 +114,71 @@ to go
   ask hawks [ set label round energy ]
   ask rabbits [ set label round energy ]
 
+  ask hawks [ if cooldown > 0 [set cooldown cooldown - 1] ]
+  ask rabbits [ if cooldown > 0 [set cooldown cooldown - 1] ]
+
   tick
 end
 
+to rabbit-move
+  ifelse cooldown != 0
+  [
+    ifelse coin-flip? [right random max-turn] [left random max-turn]
+    if not can-move? 1 [ rt 180 ]
+    forward random max-forward + 1
+  ]
+  [
+    let nearest-rabbit min-one-of other rabbits [distance myself]
+    if nearest-rabbit != nobody [face-towards nearest-rabbit max-turn]
+    forward random max-forward + 1
+  ]
+end
+
+
+to hawk-move
+  ifelse cooldown != 0
+  [
+    ifelse coin-flip? [right random max-turn] [left random max-turn]
+    if not can-move? 1 [ rt 180 ]
+    forward random max-forward + 1
+  ]
+  [
+    let nearest-hawk min-one-of other hawks [distance myself]
+    if nearest-hawk != nobody [face-towards nearest-hawk max-turn]
+    forward random max-forward + 1
+  ]
+end
+
+to face-towards [target max-angle]
+  ; Face towards the target with a maximum turning angle
+  let angle-towards-target towards target
+  ifelse abs angle-towards-target > max-angle [
+    ifelse angle-towards-target > 0 [
+      rt max-angle
+    ] [
+      lt max-angle
+    ]
+  ] [
+    face target
+  ]
+end
+
+
 to turtle-move
   if all? patches [pcolor != green] [stop]
-  ifelse coin-flip? [right random max-turn] [left random max-turn]
-  if not can-move? 1 [ rt 180 ]
-  forward random max-forward + 1
+
 end
+
 
 to-report coin-flip?
   report random 2 = 0
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-647
-448
+672
+29
+1109
+467
 -1
 -1
 13.0
@@ -144,7 +210,7 @@ grass-regrowth-time
 grass-regrowth-time
 0
 100
-30.0
+55.0
 1
 1
 NIL
@@ -159,7 +225,7 @@ initial-rabbit-num
 initial-rabbit-num
 0
 100
-10.0
+75.0
 1
 1
 NIL
@@ -174,7 +240,7 @@ rabbit-food-energy-gain
 rabbit-food-energy-gain
 0
 100
-15.0
+2.0
 1
 1
 NIL
@@ -214,9 +280,9 @@ NIL
 
 BUTTON
 67
-10
+11
 130
-43
+44
 NIL
 go
 T
@@ -231,41 +297,11 @@ NIL
 
 SLIDER
 0
-186
-172
-219
-rabbit-reproduce
-rabbit-reproduce
-0
-100
-5.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-0
 223
 172
 256
 hawk-food-energy-gain
 hawk-food-energy-gain
-0
-100
-15.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-0
-256
-172
-289
-hawk-reproduce
-hawk-reproduce
 0
 100
 5.0
@@ -305,10 +341,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-0
-367
-57
-412
+416
+148
+473
+193
 Rabbits
 count rabbits
 17
@@ -316,10 +352,10 @@ count rabbits
 11
 
 MONITOR
-57
-367
-142
-412
+473
+148
+558
+193
 Hawks
 count hawks
 17
@@ -327,10 +363,10 @@ count hawks
 11
 
 MONITOR
-143
-367
-200
-412
+559
+148
+616
+193
 Grass
 count patches with [pcolor = green]
 17
@@ -338,10 +374,10 @@ count patches with [pcolor = green]
 11
 
 PLOT
-0
 416
-200
-566
+197
+616
+347
 Populations
 ticks
 population number
@@ -356,6 +392,113 @@ PENS
 "rabbits" 1.0 0 -16777216 true "" "plot count rabbits"
 "hawks" 1.0 0 -2674135 true "" "plot count hawks"
 "grass" 1.0 0 -10899396 true "" "plot count patches with [pcolor = green]"
+
+BUTTON
+140
+9
+215
+42
+go once
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+12
+387
+184
+420
+rabbit-energy-drain
+rabbit-energy-drain
+0
+20
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+11
+421
+183
+454
+hawk-energy-drain
+hawk-energy-drain
+0
+20
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+172
+84
+344
+117
+initial-rabbit-energy
+initial-rabbit-energy
+0
+100
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+172
+116
+344
+149
+initial-hawk-energy
+initial-hawk-energy
+0
+100
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1
+187
+173
+220
+rabbit-cooldown
+rabbit-cooldown
+0
+50
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+0
+257
+172
+290
+hawk-cooldown
+hawk-cooldown
+0
+50
+10.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
