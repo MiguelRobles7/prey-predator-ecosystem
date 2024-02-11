@@ -3,10 +3,6 @@ breed [ rabbits rabbit ]
 
 turtles-own [
   energy
-<<<<<<< Updated upstream
-  cooldown
-=======
->>>>>>> Stashed changes
 ]
 patches-own [ countdown ]
 
@@ -26,12 +22,7 @@ to setup
     set color white
     set size 1.5
     set label-color pink
-<<<<<<< Updated upstream
-    set energy initial-rabbit-energy
-    set cooldown rabbit-cooldown
-=======
     set energy (random (2 * rabbit-food-energy-gain))
->>>>>>> Stashed changes
     setxy random-xcor random-ycor
   ]
 
@@ -40,12 +31,7 @@ to setup
     set shape "hawk"
     set color red - 1
     set size 2
-<<<<<<< Updated upstream
-    set energy initial-hawk-energy
-    set cooldown hawk-cooldown
-=======
     set energy (random (2 * hawk-food-energy-gain))
->>>>>>> Stashed changes
     setxy random-xcor random-ycor
   ]
 
@@ -54,7 +40,7 @@ end
 
 to go
   if not any? turtles or not any? rabbits or not any? hawks  [ stop ]
-  if ticks = 500 [stop]
+  ;if ticks = 500 [stop]
 
   ask rabbits [
     rabbit-move
@@ -89,43 +75,23 @@ to go
 
   ask rabbits[
   ; probability to reproduce
-<<<<<<< Updated upstream
-    if (any? other rabbits-here and cooldown = 0) [
-      hatch-rabbits 2 [
-        set energy initial-rabbit-energy
-        set cooldown rabbit-cooldown
-        setxy random-xcor random-ycor
-      ]
-      set cooldown rabbit-cooldown
-=======
     if (random-float 100 < rabbit-reproduce-probability ) [
       hatch-rabbits 1 [
         set energy (energy / 2)
         rt random-float 360
         fd 1
       ]
->>>>>>> Stashed changes
     ]
   ]
 
   ask hawks[
   ; probability to reproduce
-<<<<<<< Updated upstream
-    if (any? other hawks-here and cooldown = 0) [
-      hatch-hawks 2 [
-        set energy initial-hawk-energy
-        set cooldown hawk-cooldown
-        setxy random-xcor random-ycor
-      ]
-      set cooldown hawk-cooldown
-=======
     if ( random-float 100 < hawk-reproduce-probability) [
       hatch-hawks 1 [
         set energy (energy / 2)
         rt random-float 360
         fd 1
       ]
->>>>>>> Stashed changes
     ]
   ]
 
@@ -144,26 +110,10 @@ to go
   ask hawks [ set label round energy ]
   ask rabbits [ set label round energy ]
 
-  ask hawks [ if cooldown > 0 [set cooldown cooldown - 1] ]
-  ask rabbits [ if cooldown > 0 [set cooldown cooldown - 1] ]
-
   tick
 end
 
 to rabbit-move
-<<<<<<< Updated upstream
-  ifelse cooldown != 0
-  [
-    ifelse coin-flip? [right random max-turn] [left random max-turn]
-    if not can-move? 1 [ rt 180 ]
-    forward random max-forward + 1
-  ]
-  [
-    let nearest-rabbit min-one-of other rabbits [distance myself]
-    if nearest-rabbit != nobody [face-towards nearest-rabbit max-turn]
-    forward random max-forward + 1
-  ]
-=======
     ifelse coin-flip? [right random max-turn] [left random max-turn]
     if not can-move? 1 [ rt 180 ]
     forward random max-forward + 1
@@ -173,24 +123,10 @@ to rabbit-move
     if nearest-rabbit != nobody [face-towards nearest-rabbit max-turn]
     forward random max-forward + 1
 
->>>>>>> Stashed changes
 end
 
 
 to hawk-move
-<<<<<<< Updated upstream
-  ifelse cooldown != 0
-  [
-    ifelse coin-flip? [right random max-turn] [left random max-turn]
-    if not can-move? 1 [ rt 180 ]
-    forward random max-forward + 1
-  ]
-  [
-    let nearest-hawk min-one-of other hawks [distance myself]
-    if nearest-hawk != nobody [face-towards nearest-hawk max-turn]
-    forward random max-forward + 1
-  ]
-=======
     ifelse coin-flip? [right random max-turn] [left random max-turn]
     if not can-move? 1 [ rt 180 ]
     forward random max-forward + 1
@@ -200,7 +136,6 @@ to hawk-move
     if nearest-hawk != nobody [face-towards nearest-hawk max-turn]
     forward random max-forward + 1
 
->>>>>>> Stashed changes
 end
 
 to face-towards [target max-angle]
@@ -264,7 +199,7 @@ grass-regrowth-time
 grass-regrowth-time
 0
 100
-55.0
+30.0
 1
 1
 NIL
@@ -279,11 +214,7 @@ initial-rabbit-num
 initial-rabbit-num
 0
 100
-<<<<<<< Updated upstream
-75.0
-=======
-50.0
->>>>>>> Stashed changes
+100.0
 1
 1
 NIL
@@ -298,11 +229,7 @@ rabbit-food-energy-gain
 rabbit-food-energy-gain
 0
 100
-<<<<<<< Updated upstream
-2.0
-=======
 4.0
->>>>>>> Stashed changes
 1
 1
 NIL
@@ -366,11 +293,7 @@ hawk-food-energy-gain
 hawk-food-energy-gain
 0
 100
-<<<<<<< Updated upstream
-5.0
-=======
 20.0
->>>>>>> Stashed changes
 1
 1
 NIL
@@ -507,51 +430,8 @@ NIL
 HORIZONTAL
 
 SLIDER
-172
-84
-344
-117
-initial-rabbit-energy
-initial-rabbit-energy
-0
-100
-10.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-172
-116
-344
-149
-initial-hawk-energy
-initial-hawk-energy
-0
-100
-<<<<<<< Updated upstream
-15.0
-=======
-40.0
->>>>>>> Stashed changes
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
 1
 187
-<<<<<<< Updated upstream
-173
-220
-rabbit-cooldown
-rabbit-cooldown
-0
-50
-10.0
-=======
 206
 220
 rabbit-reproduce-probability
@@ -559,7 +439,6 @@ rabbit-reproduce-probability
 1
 100
 4.0
->>>>>>> Stashed changes
 1
 1
 NIL
@@ -568,15 +447,6 @@ HORIZONTAL
 SLIDER
 0
 257
-<<<<<<< Updated upstream
-172
-290
-hawk-cooldown
-hawk-cooldown
-0
-50
-10.0
-=======
 202
 290
 hawk-reproduce-probability
@@ -584,7 +454,6 @@ hawk-reproduce-probability
 1
 100
 5.0
->>>>>>> Stashed changes
 1
 1
 NIL
